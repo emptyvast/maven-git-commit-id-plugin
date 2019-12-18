@@ -23,10 +23,13 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
+
 import pl.project13.core.log.LoggerBridge;
 import pl.project13.maven.log.MavenLoggerBridge;
 
+
 import javax.annotation.Nonnull;
+
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,59 +39,59 @@ import java.util.regex.Pattern;
  */
 @Mojo(name = "validateRevision", defaultPhase = LifecyclePhase.VERIFY, threadSafe = true)
 public class ValidationMojo extends AbstractMojo {
-
-  @Nonnull
-  private final LoggerBridge log = new MavenLoggerBridge(this, false);
-
-  @Parameter(defaultValue = "true")
-  private boolean validationShouldFailIfNoMatch;
-
-  @Parameter
-  private List<ValidationProperty> validationProperties;
-
-  @Override
-  public void execute() throws MojoExecutionException {
-    if (validationProperties != null && validationShouldFailIfNoMatch) {
-      for (ValidationProperty validationProperty: validationProperties) {
-        String name = validationProperty.getName();
-        String value = validationProperty.getValue();
-        String shouldMatchTo = validationProperty.getShouldMatchTo();
-        if ((value != null) && (shouldMatchTo != null)) {
-          validateIfValueAndShouldMatchToMatches(name, value, shouldMatchTo);
-        } else {
-          printLogMessageWhenValueOrShouldMatchToIsEmpty(name, value, shouldMatchTo);
-        }
-      }
-    }
-  }
-
-  private void validateIfValueAndShouldMatchToMatches(String name, String value, String shouldMatchTo) throws MojoExecutionException {
-    Pattern pattern = Pattern.compile(shouldMatchTo);
-    Matcher matcher = pattern.matcher(value);
-    if (!matcher.find()) {
-      String commonLogMessage = "Expected '" + value + "' to match with '" + shouldMatchTo + "'!";
-      if (name != null) {
-        throw new MojoExecutionException("Validation '" + name + "' failed! " + commonLogMessage);
-      } else {
-        throw new MojoExecutionException("Validation of an unidentified validation (please set the name property-tag to be able to identify the validation) failed! " + commonLogMessage);
-      }
-    }
-  }
-
-  private void printLogMessageWhenValueOrShouldMatchToIsEmpty(String name, String value, String shouldMatchTo) {
-    String commonLogMessage = "since one of the values was null! (value = '" + value + "'; shouldMatchTo = '" + shouldMatchTo + "').";
-    if (name != null) {
-      log.warn("Skipping validation '" + name + "' " + commonLogMessage);
-    } else {
-      log.warn("Skipping an unidentified validation (please set the name property-tag to be able to identify the validation) " + commonLogMessage);
-    }
-  }
-
-  public void setValidationShouldFailIfNoMatch(boolean validationShouldFailIfNoMatch) {
-    this.validationShouldFailIfNoMatch = validationShouldFailIfNoMatch;
-  }
-
-  public void setValidationProperties(List<ValidationProperty> validationProperties) {
-    this.validationProperties = validationProperties;
-  }
+	
+	@Nonnull
+	private final LoggerBridge log = new MavenLoggerBridge(this, false);
+	
+	@Parameter(defaultValue = "true")
+	private boolean validationShouldFailIfNoMatch;
+	
+	@Parameter
+	private List<ValidationProperty> validationProperties;
+	
+	@Override
+	public void execute() throws MojoExecutionException {
+		if (validationProperties != null && validationShouldFailIfNoMatch) {
+			for (ValidationProperty validationProperty : validationProperties) {
+				String name = validationProperty.getName();
+				String value = validationProperty.getValue();
+				String shouldMatchTo = validationProperty.getShouldMatchTo();
+				if ((value != null) && (shouldMatchTo != null)) {
+					validateIfValueAndShouldMatchToMatches(name, value, shouldMatchTo);
+				} else {
+					printLogMessageWhenValueOrShouldMatchToIsEmpty(name, value, shouldMatchTo);
+				}
+			}
+		}
+	}
+	
+	private void validateIfValueAndShouldMatchToMatches(String name, String value, String shouldMatchTo) throws MojoExecutionException {
+		Pattern pattern = Pattern.compile(shouldMatchTo);
+		Matcher matcher = pattern.matcher(value);
+		if (!matcher.find()) {
+			String commonLogMessage = "Expected '" + value + "' to match with '" + shouldMatchTo + "'!";
+			if (name != null) {
+				throw new MojoExecutionException("Validation '" + name + "' failed! " + commonLogMessage);
+			} else {
+				throw new MojoExecutionException("Validation of an unidentified validation (please set the name property-tag to be able to identify the validation) failed! " + commonLogMessage);
+			}
+		}
+	}
+	
+	private void printLogMessageWhenValueOrShouldMatchToIsEmpty(String name, String value, String shouldMatchTo) {
+		String commonLogMessage = "since one of the values was null! (value = '" + value + "'; shouldMatchTo = '" + shouldMatchTo + "').";
+		if (name != null) {
+			log.warn("Skipping validation '" + name + "' " + commonLogMessage);
+		} else {
+			log.warn("Skipping an unidentified validation (please set the name property-tag to be able to identify the validation) " + commonLogMessage);
+		}
+	}
+	
+	public void setValidationShouldFailIfNoMatch(boolean validationShouldFailIfNoMatch) {
+		this.validationShouldFailIfNoMatch = validationShouldFailIfNoMatch;
+	}
+	
+	public void setValidationProperties(List<ValidationProperty> validationProperties) {
+		this.validationProperties = validationProperties;
+	}
 }

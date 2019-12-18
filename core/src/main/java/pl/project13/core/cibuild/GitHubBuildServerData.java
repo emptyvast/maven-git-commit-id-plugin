@@ -19,48 +19,50 @@ package pl.project13.core.cibuild;
 
 import pl.project13.core.log.LoggerBridge;
 
+
 import javax.annotation.Nonnull;
+
 import java.util.Map;
 import java.util.Properties;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 public class GitHubBuildServerData extends BuildServerDataProvider {
-
-  private static final String BRANCH_REF_PREFIX = "refs/heads/";
-  private static final String PULL_REQUEST_REF_PREFIX = "refs/pull/";
-
-  GitHubBuildServerData(LoggerBridge log, @Nonnull Map<String, String> env) {
-    super(log,env);
-  }
-
-  /**
-   * @see <a href="https://help.github.com/en/actions/automating-your-workflow-with-github-actions/using-environment-variables">GitHubActionsUsingEnvironmentVariables</a>
-   */
-  public static boolean isActiveServer(Map<String, String> env) {
-    return env.containsKey("GITHUB_ACTIONS");
-  }
-
-  @Override
-  void loadBuildNumber(@Nonnull Properties properties) {
-    // This information is not reliably available on GitHub Actions
-  }
-
-  @Override
-  public String getBuildBranch() {
-    String gitHubRef = env.get("GITHUB_REF");
-    if (!isNullOrEmpty(gitHubRef)) {
-      if (gitHubRef.startsWith(BRANCH_REF_PREFIX)) {
-        String branchName = gitHubRef.substring(BRANCH_REF_PREFIX.length());
-        log.info("Using environment variable based branch name. GITHUB_REF = {} (branch = {})", gitHubRef, branchName);
-        return branchName;
-      }
-      if (gitHubRef.startsWith(PULL_REQUEST_REF_PREFIX)) {
-        String branchName = env.get("GITHUB_HEAD_REF");
-        log.info("Using environment variable based branch name. GITHUB_HEAD_REF = {}", branchName);
-        return branchName;
-      }
-    }
-    return "";
-  }
+	
+	private static final String BRANCH_REF_PREFIX = "refs/heads/";
+	private static final String PULL_REQUEST_REF_PREFIX = "refs/pull/";
+	
+	GitHubBuildServerData(LoggerBridge log, @Nonnull Map<String, String> env) {
+		super(log, env);
+	}
+	
+	/**
+	 * @see <a href="https://help.github.com/en/actions/automating-your-workflow-with-github-actions/using-environment-variables">GitHubActionsUsingEnvironmentVariables</a>
+	 */
+	public static boolean isActiveServer(Map<String, String> env) {
+		return env.containsKey("GITHUB_ACTIONS");
+	}
+	
+	@Override
+	void loadBuildNumber(@Nonnull Properties properties) {
+		// This information is not reliably available on GitHub Actions
+	}
+	
+	@Override
+	public String getBuildBranch() {
+		String gitHubRef = env.get("GITHUB_REF");
+		if (!isNullOrEmpty(gitHubRef)) {
+			if (gitHubRef.startsWith(BRANCH_REF_PREFIX)) {
+				String branchName = gitHubRef.substring(BRANCH_REF_PREFIX.length());
+				log.info("Using environment variable based branch name. GITHUB_REF = {} (branch = {})", gitHubRef, branchName);
+				return branchName;
+			}
+			if (gitHubRef.startsWith(PULL_REQUEST_REF_PREFIX)) {
+				String branchName = env.get("GITHUB_HEAD_REF");
+				log.info("Using environment variable based branch name. GITHUB_HEAD_REF = {}", branchName);
+				return branchName;
+			}
+		}
+		return "";
+	}
 }

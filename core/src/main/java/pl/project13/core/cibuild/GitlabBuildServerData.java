@@ -20,40 +20,42 @@ package pl.project13.core.cibuild;
 import pl.project13.core.GitCommitPropertyConstant;
 import pl.project13.core.log.LoggerBridge;
 
+
 import javax.annotation.Nonnull;
+
 import java.util.Map;
 import java.util.Properties;
 
 public class GitlabBuildServerData extends BuildServerDataProvider {
-
-  GitlabBuildServerData(LoggerBridge log, @Nonnull Map<String, String> env) {
-    super(log,env);
-  }
-
-  /**
-   * @see <a href="https://docs.gitlab.com/ce/ci/variables/predefined_variables.html">GitlabCIVariables</a>
-   */
-  public static boolean isActiveServer(Map<String, String> env) {
-    // CI is not unique to Gitlab CI (e.g. CircleCI). Use GITLAB_CI instead.
-    return env.containsKey("GITLAB_CI");
-  }
-
-  @Override
-  void loadBuildNumber(@Nonnull Properties properties) {
-    // GITLAB CI
-    // CI_PIPELINE_ID will be present if in a Gitlab CI environment (Gitlab >8.10 & Gitlab CI >0.5)  and contains a server wide unique ID for a pipeline run
-    String uniqueBuildNumber = env.getOrDefault("CI_PIPELINE_ID", "");
-    // CI_PIPELINE_IID will be present if in a Gitlab CI environment (Gitlab >11.0) and contains the project specific build number
-    String buildNumber = env.getOrDefault("CI_PIPELINE_IID", "");
-
-    put(properties, GitCommitPropertyConstant.BUILD_NUMBER, buildNumber);
-    put(properties, GitCommitPropertyConstant.BUILD_NUMBER_UNIQUE, uniqueBuildNumber);
-  }
-
-  @Override
-  public String getBuildBranch() {
-    String environmentBasedBranch = env.get("CI_COMMIT_REF_NAME");
-    log.info("Using environment variable based branch name. CI_COMMIT_REF_NAME = {}", environmentBasedBranch);
-    return environmentBasedBranch;
-  }
+	
+	GitlabBuildServerData(LoggerBridge log, @Nonnull Map<String, String> env) {
+		super(log, env);
+	}
+	
+	/**
+	 * @see <a href="https://docs.gitlab.com/ce/ci/variables/predefined_variables.html">GitlabCIVariables</a>
+	 */
+	public static boolean isActiveServer(Map<String, String> env) {
+		// CI is not unique to Gitlab CI (e.g. CircleCI). Use GITLAB_CI instead.
+		return env.containsKey("GITLAB_CI");
+	}
+	
+	@Override
+	void loadBuildNumber(@Nonnull Properties properties) {
+		// GITLAB CI
+		// CI_PIPELINE_ID will be present if in a Gitlab CI environment (Gitlab >8.10 & Gitlab CI >0.5)  and contains a server wide unique ID for a pipeline run
+		String uniqueBuildNumber = env.getOrDefault("CI_PIPELINE_ID", "");
+		// CI_PIPELINE_IID will be present if in a Gitlab CI environment (Gitlab >11.0) and contains the project specific build number
+		String buildNumber = env.getOrDefault("CI_PIPELINE_IID", "");
+		
+		put(properties, GitCommitPropertyConstant.BUILD_NUMBER, buildNumber);
+		put(properties, GitCommitPropertyConstant.BUILD_NUMBER_UNIQUE, uniqueBuildNumber);
+	}
+	
+	@Override
+	public String getBuildBranch() {
+		String environmentBasedBranch = env.get("CI_COMMIT_REF_NAME");
+		log.info("Using environment variable based branch name. CI_COMMIT_REF_NAME = {}", environmentBasedBranch);
+		return environmentBasedBranch;
+	}
 }

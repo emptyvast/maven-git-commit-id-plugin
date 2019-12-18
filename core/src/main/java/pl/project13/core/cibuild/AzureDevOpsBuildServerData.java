@@ -20,34 +20,36 @@ package pl.project13.core.cibuild;
 import pl.project13.core.log.LoggerBridge;
 import pl.project13.core.GitCommitPropertyConstant;
 
+
 import javax.annotation.Nonnull;
+
 import java.util.Map;
 import java.util.Properties;
 
 public class AzureDevOpsBuildServerData extends BuildServerDataProvider {
-
-  AzureDevOpsBuildServerData(@Nonnull LoggerBridge log, @Nonnull Map<String, String> env) {
-    super(log, env);
-  }
-
-  /**
-   * @see <a href="https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml#build-variables">Azure DevOps - Build variables</a>
-   */
-  public static boolean isActiveServer(@Nonnull Map<String, String> env) {
-    return env.containsKey("AZURE_HTTP_USER_AGENT");
-  }
-
-  @Override
-  void loadBuildNumber(@Nonnull Properties properties) {
-    String buildNumber = env.getOrDefault("BUILD_BUILDNUMBER", "");
-
-    put(properties, GitCommitPropertyConstant.BUILD_NUMBER, buildNumber);
-  }
-
-  @Override
-  public String getBuildBranch() {
-    String environmentBasedBuildSourceBranchName = env.get("BUILD_SOURCEBRANCHNAME");
-    log.info("Using environment variable based branch name. BUILD_SOURCEBRANCHNAME = {}", environmentBasedBuildSourceBranchName);
-    return environmentBasedBuildSourceBranchName;
-  }
+	
+	AzureDevOpsBuildServerData(@Nonnull LoggerBridge log, @Nonnull Map<String, String> env) {
+		super(log, env);
+	}
+	
+	/**
+	 * @see <a href="https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml#build-variables">Azure DevOps - Build variables</a>
+	 */
+	public static boolean isActiveServer(@Nonnull Map<String, String> env) {
+		return env.containsKey("AZURE_HTTP_USER_AGENT");
+	}
+	
+	@Override
+	void loadBuildNumber(@Nonnull Properties properties) {
+		String buildNumber = env.getOrDefault("BUILD_BUILDNUMBER", "");
+		
+		put(properties, GitCommitPropertyConstant.BUILD_NUMBER, buildNumber);
+	}
+	
+	@Override
+	public String getBuildBranch() {
+		String environmentBasedBuildSourceBranchName = env.get("BUILD_SOURCEBRANCHNAME");
+		log.info("Using environment variable based branch name. BUILD_SOURCEBRANCHNAME = {}", environmentBasedBuildSourceBranchName);
+		return environmentBasedBuildSourceBranchName;
+	}
 }

@@ -19,30 +19,31 @@ package pl.project13.core.util;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.Properties;
 
-public class PropertyManager {  
-  public static void putWithoutPrefix(@Nonnull Properties properties, String key, String value) {
-    if (!isNotEmpty(value)) {
-      value = "Unknown";
-    }
-    properties.put(key, value);
-  }
-
-  private static boolean isNotEmpty(@Nullable String value) {
-    return null != value && !" ".equals(value.trim().replaceAll(" ", ""));
-  }
-
-  public static Properties readProperties(@Nonnull File propertiesFile, @Nonnull Charset sourceCharset) throws Exception {
-    try (FileInputStream fis = new FileInputStream(propertiesFile);
-         InputStreamReader reader = new InputStreamReader(fis, sourceCharset)) {
-      final Properties retVal = new Properties();
-      retVal.load(reader);
-      return retVal;
-    }
-  }
+public class PropertyManager {
+	public static void putWithoutPrefix(@Nonnull Properties properties, String key, String value) {
+		if (!isNotEmpty(value)) {
+			value = "Unknown";
+		}
+		properties.put(key, value);
+	}
+	
+	private static boolean isNotEmpty(@Nullable String value) {
+		return null != value && !" ".equals(value.trim().replaceAll(" ", ""));
+	}
+	
+	public static Properties readProperties(@Nonnull File propertiesFile, @Nonnull Charset sourceCharset) throws Exception {
+		try (FileInputStream fis = new FileInputStream(propertiesFile);
+		     InputStreamReader reader = new InputStreamReader(fis, sourceCharset)) {
+			final Properties retVal = new Properties();
+			retVal.load(reader);
+			return retVal;
+		}
+	}
 }

@@ -20,45 +20,47 @@ package pl.project13.core.cibuild;
 import pl.project13.core.GitCommitPropertyConstant;
 import pl.project13.core.log.LoggerBridge;
 
+
 import javax.annotation.Nonnull;
+
 import java.util.*;
 
 public class BambooBuildServerData extends BuildServerDataProvider {
-
-  BambooBuildServerData(LoggerBridge log, @Nonnull Map<String, String> env) {
-    super(log, env);
-  }
-
-  public static boolean isActiveServer(Map<String, String> env) {
-    return env.containsKey("bamboo_buildKey") ||
-            env.containsKey("bamboo.buildKey") ||
-            env.containsKey("BAMBOO_BUILDKEY");
-  }
-
-  @Override
-  void loadBuildNumber(@Nonnull Properties properties) {
-    String buildNumber = Optional.ofNullable(env.get("bamboo.buildNumber"))
-            .orElseGet(() -> env.getOrDefault("BAMBOO_BUILDNUMBER", ""));
-
-    put(properties, GitCommitPropertyConstant.BUILD_NUMBER, buildNumber);
-  }
-
-  @Override
-  public String getBuildBranch() {
-    String environmentBasedKey = null;
-    String environmentBasedBranch = null;
-
-    for (String envKey : Arrays.asList(
-            "bamboo.planRepository.branchName",
-            "bamboo.planRepository.<position>.branchName",
-            "BAMBOO_PLANREPOSITORY_BRANCH")) {
-      environmentBasedBranch = env.get(envKey);
-      if (environmentBasedBranch != null) {
-        environmentBasedKey = envKey;
-        break;
-      }
-    }
-    log.info("Using environment variable based branch name. {} = {}", environmentBasedKey, environmentBasedBranch);
-    return environmentBasedBranch;
-  }
+	
+	BambooBuildServerData(LoggerBridge log, @Nonnull Map<String, String> env) {
+		super(log, env);
+	}
+	
+	public static boolean isActiveServer(Map<String, String> env) {
+		return env.containsKey("bamboo_buildKey") ||
+				env.containsKey("bamboo.buildKey") ||
+				env.containsKey("BAMBOO_BUILDKEY");
+	}
+	
+	@Override
+	void loadBuildNumber(@Nonnull Properties properties) {
+		String buildNumber = Optional.ofNullable(env.get("bamboo.buildNumber"))
+				.orElseGet(() -> env.getOrDefault("BAMBOO_BUILDNUMBER", ""));
+		
+		put(properties, GitCommitPropertyConstant.BUILD_NUMBER, buildNumber);
+	}
+	
+	@Override
+	public String getBuildBranch() {
+		String environmentBasedKey = null;
+		String environmentBasedBranch = null;
+		
+		for (String envKey : Arrays.asList(
+				"bamboo.planRepository.branchName",
+				"bamboo.planRepository.<position>.branchName",
+				"BAMBOO_PLANREPOSITORY_BRANCH")) {
+			environmentBasedBranch = env.get(envKey);
+			if (environmentBasedBranch != null) {
+				environmentBasedKey = envKey;
+				break;
+			}
+		}
+		log.info("Using environment variable based branch name. {} = {}", environmentBasedKey, environmentBasedBranch);
+		return environmentBasedBranch;
+	}
 }

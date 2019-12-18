@@ -20,23 +20,24 @@ package pl.project13.maven.git;
 import org.fest.assertions.Condition;
 
 import javax.annotation.Nonnull;
+
 import java.util.Map;
 
 class ContainsKeyCondition extends Condition<Map<?, ?>> {
-
-  private String key;
-
-  public ContainsKeyCondition(String key) {
-    this.key = key;
-  }
-
-  @Override
-  public boolean matches(@Nonnull Map<?, ?> map) {
-    boolean containsKey = map.containsKey(key);
-    if (!containsKey) {
-      throw new RuntimeException(String.format("Map did not contain [%s] key! Map is: %s\nValue for [%s] was: %s", key, map, key, map.get(key)));
-    }
-    return true;
-  }
-
+	
+	private String key;
+	
+	public ContainsKeyCondition(String key) {
+		this.key = key;
+	}
+	
+	@Override
+	public boolean matches(@Nonnull Map<?, ?> map) {
+		boolean containsKey = map.containsKey(key);
+		if (!containsKey) {
+			throw new RuntimeException(String.format("Map did not contain [%s] key! Map is: %s\nValue for [%s] was: %s", key, map, key, map.get(key)));
+		}
+		return true;
+	}
+	
 }

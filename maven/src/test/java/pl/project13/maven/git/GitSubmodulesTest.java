@@ -21,50 +21,51 @@ import org.apache.maven.project.MavenProject;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
+
 import java.io.File;
 import java.util.Properties;
 
 import static org.fest.assertions.Assertions.assertThat;
 
 public class GitSubmodulesTest extends GitIntegrationTest {
-
-  @Test
-  public void shouldResolvePropertiesOnDefaultSettingsForNonPomProject() throws Exception {
-    mavenSandbox
-        .withParentProject("my-jar-project", "jar")
-        .withGitRepoInParent(AvailableGitTestRepo.WITH_SUBMODULES)
-        .withChildProject("example-child", "jar")
-        .create();
-
-    MavenProject targetProject = mavenSandbox.getChildProject();
-    setProjectToExecuteMojoIn(targetProject);
-
-    // when
-    mojo.execute();
-
-    // then
-    assertGitPropertiesPresentInProject(targetProject.getProperties());
-  }
-
-  public void setProjectToExecuteMojoIn(@Nonnull MavenProject project) {
-    mojo.project = project;
-    mojo.dotGitDirectory = new File(project.getBasedir(), ".git");
-  }
-
-  private void assertGitPropertiesPresentInProject(Properties properties) {
-    assertThat(properties).satisfies(new ContainsKeyCondition("git.build.time"));
-    assertThat(properties).satisfies(new ContainsKeyCondition("git.build.host"));
-    assertThat(properties).satisfies(new ContainsKeyCondition("git.branch"));
-    assertThat(properties).satisfies(new ContainsKeyCondition("git.commit.id.full"));
-    assertThat(properties).satisfies(new ContainsKeyCondition("git.commit.id.abbrev"));
-    assertThat(properties).satisfies(new ContainsKeyCondition("git.build.user.name"));
-    assertThat(properties).satisfies(new ContainsKeyCondition("git.build.user.email"));
-    assertThat(properties).satisfies(new ContainsKeyCondition("git.commit.user.name"));
-    assertThat(properties).satisfies(new ContainsKeyCondition("git.commit.user.email"));
-    assertThat(properties).satisfies(new ContainsKeyCondition("git.commit.message.full"));
-    assertThat(properties).satisfies(new ContainsKeyCondition("git.commit.message.short"));
-    assertThat(properties).satisfies(new ContainsKeyCondition("git.commit.time"));
-    assertThat(properties).satisfies(new ContainsKeyCondition("git.remote.origin.url"));
-  }
-
+	
+	@Test
+	public void shouldResolvePropertiesOnDefaultSettingsForNonPomProject() throws Exception {
+		mavenSandbox
+				.withParentProject("my-jar-project", "jar")
+				.withGitRepoInParent(AvailableGitTestRepo.WITH_SUBMODULES)
+				.withChildProject("example-child", "jar")
+				.create();
+		
+		MavenProject targetProject = mavenSandbox.getChildProject();
+		setProjectToExecuteMojoIn(targetProject);
+		
+		// when
+		mojo.execute();
+		
+		// then
+		assertGitPropertiesPresentInProject(targetProject.getProperties());
+	}
+	
+	public void setProjectToExecuteMojoIn(@Nonnull MavenProject project) {
+		mojo.project = project;
+		mojo.dotGitDirectory = new File(project.getBasedir(), ".git");
+	}
+	
+	private void assertGitPropertiesPresentInProject(Properties properties) {
+		assertThat(properties).satisfies(new ContainsKeyCondition("git.build.time"));
+		assertThat(properties).satisfies(new ContainsKeyCondition("git.build.host"));
+		assertThat(properties).satisfies(new ContainsKeyCondition("git.branch"));
+		assertThat(properties).satisfies(new ContainsKeyCondition("git.commit.id.full"));
+		assertThat(properties).satisfies(new ContainsKeyCondition("git.commit.id.abbrev"));
+		assertThat(properties).satisfies(new ContainsKeyCondition("git.build.user.name"));
+		assertThat(properties).satisfies(new ContainsKeyCondition("git.build.user.email"));
+		assertThat(properties).satisfies(new ContainsKeyCondition("git.commit.user.name"));
+		assertThat(properties).satisfies(new ContainsKeyCondition("git.commit.user.email"));
+		assertThat(properties).satisfies(new ContainsKeyCondition("git.commit.message.full"));
+		assertThat(properties).satisfies(new ContainsKeyCondition("git.commit.message.short"));
+		assertThat(properties).satisfies(new ContainsKeyCondition("git.commit.time"));
+		assertThat(properties).satisfies(new ContainsKeyCondition("git.remote.origin.url"));
+	}
+	
 }

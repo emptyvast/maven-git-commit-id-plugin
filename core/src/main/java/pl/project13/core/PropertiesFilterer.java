@@ -20,67 +20,69 @@ package pl.project13.core;
 import java.util.List;
 import java.util.Properties;
 
+
 import pl.project13.core.log.LoggerBridge;
+
 
 import javax.annotation.Nullable;
 
 public class PropertiesFilterer {
-
-  private LoggerBridge log;
-
-  public PropertiesFilterer(LoggerBridge log) {
-    this.log = log;
-  }
-
-  public void filterNot(Properties properties, @Nullable List<String> exclusions, String prefixDot) {
-    if (exclusions == null || exclusions.isEmpty()) {
-      return;
-    }
-
-    properties.stringPropertyNames()
-            .stream()
-            .filter(key -> isOurProperty(key, prefixDot))
-            .forEach(key -> {
-              if (exclusions.stream()
-                      .anyMatch(key::matches)) {
-                log.debug("shouldExclude.apply({})", key);
-                properties.remove(key);
-              }
-            });
-  }
-
-  public void filter(Properties properties, @Nullable List<String> inclusions, String prefixDot) {
-    if (inclusions == null || inclusions.isEmpty()) {
-      return;
-    }
-
-    properties.stringPropertyNames()
-            .stream()
-            .filter(key -> isOurProperty(key, prefixDot))
-            .forEach(key -> {
-              if (inclusions.stream()
-                      .noneMatch(key::matches)) {
-                log.debug("!shouldInclude.apply({})", key);
-                properties.remove(key);
-              }
-            });
-  }
-
-  public static boolean isIncluded(String keyWithPrefix, @Nullable List<String> inclusions, @Nullable List<String> exclusions) {
-    boolean included = true;
-    if (inclusions != null && !inclusions.isEmpty()) {
-      included &= inclusions.stream()
-              .anyMatch(keyWithPrefix::matches);
-    }
-    if (exclusions != null && !exclusions.isEmpty()) {
-      included &= exclusions.stream()
-              .noneMatch(keyWithPrefix::matches);
-    }
-
-    return included;
-  }
-
-  private boolean isOurProperty(String key, String prefixDot) {
-    return key.startsWith(prefixDot);
-  }
+	
+	private LoggerBridge log;
+	
+	public PropertiesFilterer(LoggerBridge log) {
+		this.log = log;
+	}
+	
+	public void filterNot(Properties properties, @Nullable List<String> exclusions, String prefixDot) {
+		if (exclusions == null || exclusions.isEmpty()) {
+			return;
+		}
+		
+		properties.stringPropertyNames()
+				.stream()
+				.filter(key -> isOurProperty(key, prefixDot))
+				.forEach(key -> {
+					if (exclusions.stream()
+							.anyMatch(key::matches)) {
+						log.debug("shouldExclude.apply({})", key);
+						properties.remove(key);
+					}
+				});
+	}
+	
+	public void filter(Properties properties, @Nullable List<String> inclusions, String prefixDot) {
+		if (inclusions == null || inclusions.isEmpty()) {
+			return;
+		}
+		
+		properties.stringPropertyNames()
+				.stream()
+				.filter(key -> isOurProperty(key, prefixDot))
+				.forEach(key -> {
+					if (inclusions.stream()
+							.noneMatch(key::matches)) {
+						log.debug("!shouldInclude.apply({})", key);
+						properties.remove(key);
+					}
+				});
+	}
+	
+	public static boolean isIncluded(String keyWithPrefix, @Nullable List<String> inclusions, @Nullable List<String> exclusions) {
+		boolean included = true;
+		if (inclusions != null && !inclusions.isEmpty()) {
+			included &= inclusions.stream()
+					.anyMatch(keyWithPrefix::matches);
+		}
+		if (exclusions != null && !exclusions.isEmpty()) {
+			included &= exclusions.stream()
+					.noneMatch(keyWithPrefix::matches);
+		}
+		
+		return included;
+	}
+	
+	private boolean isOurProperty(String key, String prefixDot) {
+		return key.startsWith(prefixDot);
+	}
 }

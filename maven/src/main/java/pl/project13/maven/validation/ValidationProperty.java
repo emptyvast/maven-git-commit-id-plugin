@@ -19,40 +19,40 @@ package pl.project13.maven.validation;
 
 
 public class ValidationProperty {
-  private String name;
-  private String value;
-  private String shouldMatchTo;
-
-  public ValidationProperty() {
-  }
-
-  ValidationProperty(String name, String value, String shouldMatchTo) {
-    this.name = name;
-    this.value = value;
-    this.shouldMatchTo = shouldMatchTo;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public void setValue(String value) {
-    this.value = value;
-  }
-
-  public void setShouldMatchTo(String shouldMatchTo) {
-    this.shouldMatchTo = shouldMatchTo;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public String getValue() {
-    return value;
-  }
-
-  public String getShouldMatchTo() {
-    return shouldMatchTo;
-  }
+	private String name;
+	private String value;
+	private String shouldMatchTo;
+	
+	public ValidationProperty() {
+	}
+	
+	ValidationProperty(String name, String value, String shouldMatchTo) {
+		this.name = name;
+		this.value = value;
+		this.shouldMatchTo = shouldMatchTo;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public void setValue(String value) {
+		this.value = value;
+	}
+	
+	public void setShouldMatchTo(String shouldMatchTo) {
+		this.shouldMatchTo = shouldMatchTo;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public String getValue() {
+		return value;
+	}
+	
+	public String getShouldMatchTo() {
+		return shouldMatchTo;
+	}
 }

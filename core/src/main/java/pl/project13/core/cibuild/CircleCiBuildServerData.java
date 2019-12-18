@@ -20,33 +20,35 @@ package pl.project13.core.cibuild;
 import pl.project13.core.GitCommitPropertyConstant;
 import pl.project13.core.log.LoggerBridge;
 
+
 import javax.annotation.Nonnull;
+
 import java.util.Map;
 import java.util.Properties;
 
 public class CircleCiBuildServerData extends BuildServerDataProvider {
-
-  CircleCiBuildServerData(LoggerBridge log, @Nonnull Map<String, String> env) {
-    super(log,env);
-  }
-
-  /**
-   * @see <a href="https://circleci.com/docs/2.0/env-vars/#built-in-environment-variables">CircleCIBuiltInVariables</a>
-   */
-  public static boolean isActiveServer(Map<String, String> env) {
-    return env.containsKey("CIRCLECI");
-  }
-
-  @Override
-  void loadBuildNumber(@Nonnull Properties properties) {
-    String buildNumber = env.getOrDefault("CIRCLE_BUILD_NUM", "");
-    put(properties, GitCommitPropertyConstant.BUILD_NUMBER, buildNumber);
-  }
-
-  @Override
-  public String getBuildBranch() {
-    String environmentBasedBranch = env.get("CIRCLE_BRANCH");
-    log.info("Using environment variable based branch name. CIRCLE_BRANCH = {}", environmentBasedBranch);
-    return environmentBasedBranch;
-  }
+	
+	CircleCiBuildServerData(LoggerBridge log, @Nonnull Map<String, String> env) {
+		super(log, env);
+	}
+	
+	/**
+	 * @see <a href="https://circleci.com/docs/2.0/env-vars/#built-in-environment-variables">CircleCIBuiltInVariables</a>
+	 */
+	public static boolean isActiveServer(Map<String, String> env) {
+		return env.containsKey("CIRCLECI");
+	}
+	
+	@Override
+	void loadBuildNumber(@Nonnull Properties properties) {
+		String buildNumber = env.getOrDefault("CIRCLE_BUILD_NUM", "");
+		put(properties, GitCommitPropertyConstant.BUILD_NUMBER, buildNumber);
+	}
+	
+	@Override
+	public String getBuildBranch() {
+		String environmentBasedBranch = env.get("CIRCLE_BRANCH");
+		log.info("Using environment variable based branch name. CIRCLE_BRANCH = {}", environmentBasedBranch);
+		return environmentBasedBranch;
+	}
 }

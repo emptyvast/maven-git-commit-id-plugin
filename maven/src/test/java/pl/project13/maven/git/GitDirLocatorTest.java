@@ -32,30 +32,30 @@ import static org.fest.assertions.Assertions.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GitDirLocatorTest {
-
-  @Mock
-  MavenProject project;
-
-  List<MavenProject> reactorProjects = Collections.emptyList();
-
-  @Test
-  public void shouldUseTheManuallySpecifiedDirectory() throws Exception {
-    // given
-    File dotGitDir = Files.createTempDirectory("temp").toFile();
-    try {
-
-      // when
-      GitDirLocator locator = new GitDirLocator(project, reactorProjects);
-      File foundDirectory = locator.lookupGitDirectory(dotGitDir);
-
-      // then
-      assert foundDirectory != null;
-      assertThat(foundDirectory.getAbsolutePath()).isEqualTo(dotGitDir.getAbsolutePath());
-    } finally {
-      if (!dotGitDir.delete()) {
-        dotGitDir.deleteOnExit();
-      }
-    }
-  }
-
+	
+	@Mock
+	MavenProject project;
+	
+	List<MavenProject> reactorProjects = Collections.emptyList();
+	
+	@Test
+	public void shouldUseTheManuallySpecifiedDirectory() throws Exception {
+		// given
+		File dotGitDir = Files.createTempDirectory("temp").toFile();
+		try {
+			
+			// when
+			GitDirLocator locator = new GitDirLocator(project, reactorProjects);
+			File foundDirectory = locator.lookupGitDirectory(dotGitDir);
+			
+			// then
+			assert foundDirectory != null;
+			assertThat(foundDirectory.getAbsolutePath()).isEqualTo(dotGitDir.getAbsolutePath());
+		} finally {
+			if (!dotGitDir.delete()) {
+				dotGitDir.deleteOnExit();
+			}
+		}
+	}
+	
 }

@@ -19,7 +19,10 @@ package pl.project13.maven.git;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.junit.Test;
+
+
 import pl.project13.core.PropertiesFileGenerator;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -31,38 +34,38 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class GitCommitIdMojoTest {
-  @Test
-  public void testCraftPropertiesOutputFileWithRelativePath() throws IOException {
-    File baseDir = new File(".");
-    String targetDir = baseDir.getCanonicalPath() + File.separator;
-    String generateGitPropertiesFilename = "target" + File.separator + "classes" + File.separator + "git.properties";
-    
-    File result = PropertiesFileGenerator.craftPropertiesOutputFile(baseDir, generateGitPropertiesFilename);
-    assertThat(result.getCanonicalPath()).isEqualTo(targetDir + generateGitPropertiesFilename);
-  }
-
-  @Test
-  public void testCraftPropertiesOutputFileWithFullPath() throws IOException {
-    File baseDir = new File(".");
-    String targetDir = baseDir.getCanonicalPath() + File.separator;
-    String generateGitPropertiesFilename = targetDir + "target" + File.separator + "classes" + File.separator + "git.properties";
-
-    File result = PropertiesFileGenerator.craftPropertiesOutputFile(baseDir, generateGitPropertiesFilename);
-    assertThat(result.getCanonicalPath()).isEqualTo(generateGitPropertiesFilename);
-  }
-
-  @Test
-  public void verifyAllowedCharactersForEvaluateOnCommit() throws MojoExecutionException {
-    Pattern p = GitCommitIdMojo.allowedCharactersForEvaluateOnCommit;
-    assertTrue(p.matcher("5957e419d").matches());
-    assertTrue(p.matcher("my_tag").matches());
-    assertTrue(p.matcher("my-tag").matches());
-    assertTrue(p.matcher("my.tag").matches());
-    assertTrue(p.matcher("HEAD^1").matches());
-    assertTrue(p.matcher("feature/branch").matches());
-
-    assertFalse(p.matcher("; CODE INJECTION").matches());
-    assertFalse(p.matcher("|exit").matches());
-    assertFalse(p.matcher("&&cat /etc/passwd").matches());
-  }
+	@Test
+	public void testCraftPropertiesOutputFileWithRelativePath() throws IOException {
+		File baseDir = new File(".");
+		String targetDir = baseDir.getCanonicalPath() + File.separator;
+		String generateGitPropertiesFilename = "target" + File.separator + "classes" + File.separator + "git.properties";
+		
+		File result = PropertiesFileGenerator.craftPropertiesOutputFile(baseDir, generateGitPropertiesFilename);
+		assertThat(result.getCanonicalPath()).isEqualTo(targetDir + generateGitPropertiesFilename);
+	}
+	
+	@Test
+	public void testCraftPropertiesOutputFileWithFullPath() throws IOException {
+		File baseDir = new File(".");
+		String targetDir = baseDir.getCanonicalPath() + File.separator;
+		String generateGitPropertiesFilename = targetDir + "target" + File.separator + "classes" + File.separator + "git.properties";
+		
+		File result = PropertiesFileGenerator.craftPropertiesOutputFile(baseDir, generateGitPropertiesFilename);
+		assertThat(result.getCanonicalPath()).isEqualTo(generateGitPropertiesFilename);
+	}
+	
+	@Test
+	public void verifyAllowedCharactersForEvaluateOnCommit() throws MojoExecutionException {
+		Pattern p = GitCommitIdMojo.allowedCharactersForEvaluateOnCommit;
+		assertTrue(p.matcher("5957e419d").matches());
+		assertTrue(p.matcher("my_tag").matches());
+		assertTrue(p.matcher("my-tag").matches());
+		assertTrue(p.matcher("my.tag").matches());
+		assertTrue(p.matcher("HEAD^1").matches());
+		assertTrue(p.matcher("feature/branch").matches());
+		
+		assertFalse(p.matcher("; CODE INJECTION").matches());
+		assertFalse(p.matcher("|exit").matches());
+		assertFalse(p.matcher("&&cat /etc/passwd").matches());
+	}
 }

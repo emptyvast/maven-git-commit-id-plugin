@@ -25,52 +25,52 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ValidationMojoTest {
-  @Test(expected = MojoExecutionException.class)
-  public void validationNotMatchingAndValidationShouldFailIfNoMatch() throws MojoExecutionException {
-    List<ValidationProperty> validationProperties = getNonMatchingValidationProperties();
-    executeMojo(validationProperties, true);
-  }
-
-  @Test
-  public void validationNotMatchingAndValidationShouldNotFailIfNoMatch() throws MojoExecutionException {
-    List<ValidationProperty> validationProperties = getNonMatchingValidationProperties();
-    executeMojo(validationProperties, false);
-  }
-
-  private List<ValidationProperty> getNonMatchingValidationProperties() {
-    return getListValidationProperty("name", "value", "thisIsNotMatchingToValue");
-  }
-
-  @Test
-  public void validationMatchingAndValidationShouldFailIfNoMatch() throws MojoExecutionException {
-    List<ValidationProperty> validationProperties = getMatchingValidationProperties();
-    executeMojo(validationProperties, true);
-  }
-
-  private List<ValidationProperty> getMatchingValidationProperties() {
-    return getListValidationProperty("name", "value", "value");
-  }
-
-  @Test
-  public void nullTests() throws MojoExecutionException {
-    boolean validationShouldFailIfNoMatch = true;
-    executeMojo(null, validationShouldFailIfNoMatch);
-    executeMojo(getListValidationProperty(null, null, null), validationShouldFailIfNoMatch);
-    executeMojo(getListValidationProperty("", null, null), validationShouldFailIfNoMatch);
-    executeMojo(getListValidationProperty(null, "", null), validationShouldFailIfNoMatch);
-    executeMojo(getListValidationProperty(null, null, ""), validationShouldFailIfNoMatch);
-  }
-
-  private void executeMojo(List<ValidationProperty> validationProperties, boolean validationShouldFailIfNoMatch) throws MojoExecutionException {
-    ValidationMojo cut = new ValidationMojo();
-    cut.setValidationProperties(validationProperties);
-    cut.setValidationShouldFailIfNoMatch(validationShouldFailIfNoMatch);
-    cut.execute();
-  }
-
-  private List<ValidationProperty> getListValidationProperty(String name, String value, String shouldMatchTo) {
-    List<ValidationProperty> list = new ArrayList<>();
-    list.add(new ValidationProperty(name, value, shouldMatchTo));
-    return list;
-  }
+	@Test(expected = MojoExecutionException.class)
+	public void validationNotMatchingAndValidationShouldFailIfNoMatch() throws MojoExecutionException {
+		List<ValidationProperty> validationProperties = getNonMatchingValidationProperties();
+		executeMojo(validationProperties, true);
+	}
+	
+	@Test
+	public void validationNotMatchingAndValidationShouldNotFailIfNoMatch() throws MojoExecutionException {
+		List<ValidationProperty> validationProperties = getNonMatchingValidationProperties();
+		executeMojo(validationProperties, false);
+	}
+	
+	private List<ValidationProperty> getNonMatchingValidationProperties() {
+		return getListValidationProperty("name", "value", "thisIsNotMatchingToValue");
+	}
+	
+	@Test
+	public void validationMatchingAndValidationShouldFailIfNoMatch() throws MojoExecutionException {
+		List<ValidationProperty> validationProperties = getMatchingValidationProperties();
+		executeMojo(validationProperties, true);
+	}
+	
+	private List<ValidationProperty> getMatchingValidationProperties() {
+		return getListValidationProperty("name", "value", "value");
+	}
+	
+	@Test
+	public void nullTests() throws MojoExecutionException {
+		boolean validationShouldFailIfNoMatch = true;
+		executeMojo(null, validationShouldFailIfNoMatch);
+		executeMojo(getListValidationProperty(null, null, null), validationShouldFailIfNoMatch);
+		executeMojo(getListValidationProperty("", null, null), validationShouldFailIfNoMatch);
+		executeMojo(getListValidationProperty(null, "", null), validationShouldFailIfNoMatch);
+		executeMojo(getListValidationProperty(null, null, ""), validationShouldFailIfNoMatch);
+	}
+	
+	private void executeMojo(List<ValidationProperty> validationProperties, boolean validationShouldFailIfNoMatch) throws MojoExecutionException {
+		ValidationMojo cut = new ValidationMojo();
+		cut.setValidationProperties(validationProperties);
+		cut.setValidationShouldFailIfNoMatch(validationShouldFailIfNoMatch);
+		cut.execute();
+	}
+	
+	private List<ValidationProperty> getListValidationProperty(String name, String value, String shouldMatchTo) {
+		List<ValidationProperty> list = new ArrayList<>();
+		list.add(new ValidationProperty(name, value, shouldMatchTo));
+		return list;
+	}
 }

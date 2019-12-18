@@ -18,6 +18,6 @@
 package pl.project13.core;
 
 public enum CommitIdGenerationMode {
-  FULL,
-  FLAT
+	FULL,
+	FLAT
 }

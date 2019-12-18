@@ -22,202 +22,205 @@ import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.lib.Repository;
 import org.junit.Before;
 import org.junit.Test;
+
+
 import pl.project13.core.log.StdOutLoggerBridge;
 import pl.project13.maven.git.AvailableGitTestRepo;
 import pl.project13.maven.git.GitIntegrationTest;
+
 
 import java.util.Optional;
 
 import static org.fest.assertions.Assertions.assertThat;
 
 public class DescribeCommandTagsIntegrationTest extends GitIntegrationTest {
-
-  static final String PROJECT_NAME = "my-jar-project";
-
-  @Override
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
-
-    mavenSandbox
-        .withParentProject(PROJECT_NAME, "jar")
-        .withNoChildProject()
-        .withGitRepoInParent(AvailableGitTestRepo.WITH_LIGHTWEIGHT_TAG_BEFORE_ANNOTATED_TAG)
-        .create();
-  }
-
-  @Override
-  protected Optional<String> projectDir() {
-    return Optional.of(PROJECT_NAME);
-  }
-
-  @Test
-  public void shouldFindAnnotatedTagWithTagsOptionNotGiven() throws Exception {
-    // given
-
-    // HEAD
-    // lightweight-tag
-    // annotated-tag
-
-    try (final Git git = git(); final Repository repo = git.getRepository()) {
-      git.reset().setMode(ResetCommand.ResetType.HARD).call();
-
-      // when
-      DescribeResult res = DescribeCommand
-              .on(evaluateOnCommit, repo, new StdOutLoggerBridge(true))
-              .call();
-
-      // then
-      assertThat(res).isNotNull();
-
-      assertThat(res.toString()).contains("annotated-tag");
-    }
-  }
-
-  @Test
-  public void shouldFindLightweightTagWithTagsOptionGiven() throws Exception {
-    // given
-
-    // HEAD
-    // lightweight-tag
-    // annotated-tag
-
-    try (final Git git = git(); final Repository repo = git.getRepository()) {
-      git.reset().setMode(ResetCommand.ResetType.HARD).call();
-
-      // when
-      DescribeResult res = DescribeCommand
-              .on(evaluateOnCommit, repo, new StdOutLoggerBridge(true))
-              .tags()
-              .call();
-
-      // then
-      assertThat(res).isNotNull();
-
-      assertThat(res.toString()).contains("lightweight-tag");
-    }
-  }
-
-  @Test
-  public void shouldFindAnnotatedTagWithMatchOptionGiven() throws Exception {
-    // given
-
-    // HEAD
-    // lightweight-tag
-    // annotated-tag
-
-    try (final Git git = git(); final Repository repo = git.getRepository()) {
-      git.reset().setMode(ResetCommand.ResetType.HARD).call();
-
-      // when
-      DescribeResult res = DescribeCommand
-              .on(evaluateOnCommit, repo, new StdOutLoggerBridge(true))
-              .tags()
-              .match("annotated*")
-              .call();
-
-      // then
-      assertThat(res).isNotNull();
-
-      assertThat(res.toString()).contains("annotated-tag");
-    }
-  }
-
-  /**
-   * <pre>
-   * $ lg
-   *   * b6a73ed - (HEAD, master) third addition (32 hours ago) <p>Konrad Malawski</p>
-   *   * d37a598 - (newest-tag, lightweight-tag) second line (32 hours ago) <p>Konrad Malawski</p>
-   *   * 9597545 - (annotated-tag) initial commit (32 hours ago) <p>Konrad Malawski</p>
-   *
-   * $ git describe
-   *   newest-tag-1-gb6a73ed
-   * </pre>
-   */
-  @Test
-  public void shouldFindNewerTagWhenACommitHasTwoOrMoreTags() throws Exception {
-    // given
-
-    // HEAD
-    // lightweight-tag
-    // annotated-tag
-
-    try (final Git git = git(); final Repository repo = git.getRepository()) {
-      git.reset().setMode(ResetCommand.ResetType.HARD).call();
-
-      // when
-      DescribeResult res = DescribeCommand
-              .on(evaluateOnCommit, repo, new StdOutLoggerBridge(true))
-              .tags()
-              .call();
-
-      // then
-      assertThat(res).isNotNull();
-
-      assertThat(res.toString()).isEqualTo("lightweight-tag-1-gb6a73ed");
-    }
-  }
-
-  @Test
-  public void shouldUseTheNewestTagOnACommitIfItHasMoreThanOneTags() throws Exception {
-    // given
-    mavenSandbox
-        .withParentProject(PROJECT_NAME, "jar")
-        .withNoChildProject()
-        .withGitRepoInParent(AvailableGitTestRepo.WITH_LIGHTWEIGHT_TAG_BEFORE_ANNOTATED_TAG)
-        .create();
-
-    String snapshotTag = "0.0.1-SNAPSHOT";
-    String latestTag = "OName-0.0.1";
-
-    try (final Git git = git(); final Repository repo = git.getRepository()) {
-      try (Git wrap = Git.wrap(repo)) {
-        wrap.reset().setMode(ResetCommand.ResetType.HARD).call();
-
-        // when
-        wrap.tag().setName(snapshotTag).call();
-        Thread.sleep(2000);
-        wrap.tag().setName(latestTag).call();
-
-        DescribeResult res = DescribeCommand
-                .on(evaluateOnCommit, repo, new StdOutLoggerBridge(true))
-                .tags()
-                .call();
-
-        // then
-        assertThat(res.toString()).isEqualTo(latestTag);
-      }
-    }
-  }
-
-  @Test
-  public void shouldUseTheNewestTagOnACommitIfItHasMoreThanOneTagsReversedCase() throws Exception {
-    // given
-    mavenSandbox
-        .withParentProject(PROJECT_NAME, "jar")
-        .withNoChildProject()
-        .withGitRepoInParent(AvailableGitTestRepo.WITH_LIGHTWEIGHT_TAG_BEFORE_ANNOTATED_TAG)
-        .create();
-
-    String beforeTag = "OName-0.0.1";
-    String latestTag = "0.0.1-SNAPSHOT";
-
-    try (final Git git = git(); final Repository repo = git.getRepository()) {
-      try (Git wrap = Git.wrap(repo)) {
-        wrap.reset().setMode(ResetCommand.ResetType.HARD).call();
-
-        // when
-        wrap.tag().setName(beforeTag).call();
-        wrap.tag().setName(latestTag).call();
-      }
-
-      DescribeResult res = DescribeCommand
-              .on(evaluateOnCommit, repo, new StdOutLoggerBridge(true))
-              .tags()
-              .call();
-
-      // then
-      assertThat(res.toString()).isEqualTo(latestTag);
-    }
-  }
+	
+	static final String PROJECT_NAME = "my-jar-project";
+	
+	@Override
+	@Before
+	public void setUp() throws Exception {
+		super.setUp();
+		
+		mavenSandbox
+				.withParentProject(PROJECT_NAME, "jar")
+				.withNoChildProject()
+				.withGitRepoInParent(AvailableGitTestRepo.WITH_LIGHTWEIGHT_TAG_BEFORE_ANNOTATED_TAG)
+				.create();
+	}
+	
+	@Override
+	protected Optional<String> projectDir() {
+		return Optional.of(PROJECT_NAME);
+	}
+	
+	@Test
+	public void shouldFindAnnotatedTagWithTagsOptionNotGiven() throws Exception {
+		// given
+		
+		// HEAD
+		// lightweight-tag
+		// annotated-tag
+		
+		try (final Git git = git(); final Repository repo = git.getRepository()) {
+			git.reset().setMode(ResetCommand.ResetType.HARD).call();
+			
+			// when
+			DescribeResult res = DescribeCommand
+					.on(evaluateOnCommit, repo, new StdOutLoggerBridge(true))
+					.call();
+			
+			// then
+			assertThat(res).isNotNull();
+			
+			assertThat(res.toString()).contains("annotated-tag");
+		}
+	}
+	
+	@Test
+	public void shouldFindLightweightTagWithTagsOptionGiven() throws Exception {
+		// given
+		
+		// HEAD
+		// lightweight-tag
+		// annotated-tag
+		
+		try (final Git git = git(); final Repository repo = git.getRepository()) {
+			git.reset().setMode(ResetCommand.ResetType.HARD).call();
+			
+			// when
+			DescribeResult res = DescribeCommand
+					.on(evaluateOnCommit, repo, new StdOutLoggerBridge(true))
+					.tags()
+					.call();
+			
+			// then
+			assertThat(res).isNotNull();
+			
+			assertThat(res.toString()).contains("lightweight-tag");
+		}
+	}
+	
+	@Test
+	public void shouldFindAnnotatedTagWithMatchOptionGiven() throws Exception {
+		// given
+		
+		// HEAD
+		// lightweight-tag
+		// annotated-tag
+		
+		try (final Git git = git(); final Repository repo = git.getRepository()) {
+			git.reset().setMode(ResetCommand.ResetType.HARD).call();
+			
+			// when
+			DescribeResult res = DescribeCommand
+					.on(evaluateOnCommit, repo, new StdOutLoggerBridge(true))
+					.tags()
+					.match("annotated*")
+					.call();
+			
+			// then
+			assertThat(res).isNotNull();
+			
+			assertThat(res.toString()).contains("annotated-tag");
+		}
+	}
+	
+	/**
+	 * <pre>
+	 * $ lg
+	 *   * b6a73ed - (HEAD, master) third addition (32 hours ago) <p>Konrad Malawski</p>
+	 *   * d37a598 - (newest-tag, lightweight-tag) second line (32 hours ago) <p>Konrad Malawski</p>
+	 *   * 9597545 - (annotated-tag) initial commit (32 hours ago) <p>Konrad Malawski</p>
+	 *
+	 * $ git describe
+	 *   newest-tag-1-gb6a73ed
+	 * </pre>
+	 */
+	@Test
+	public void shouldFindNewerTagWhenACommitHasTwoOrMoreTags() throws Exception {
+		// given
+		
+		// HEAD
+		// lightweight-tag
+		// annotated-tag
+		
+		try (final Git git = git(); final Repository repo = git.getRepository()) {
+			git.reset().setMode(ResetCommand.ResetType.HARD).call();
+			
+			// when
+			DescribeResult res = DescribeCommand
+					.on(evaluateOnCommit, repo, new StdOutLoggerBridge(true))
+					.tags()
+					.call();
+			
+			// then
+			assertThat(res).isNotNull();
+			
+			assertThat(res.toString()).isEqualTo("lightweight-tag-1-gb6a73ed");
+		}
+	}
+	
+	@Test
+	public void shouldUseTheNewestTagOnACommitIfItHasMoreThanOneTags() throws Exception {
+		// given
+		mavenSandbox
+				.withParentProject(PROJECT_NAME, "jar")
+				.withNoChildProject()
+				.withGitRepoInParent(AvailableGitTestRepo.WITH_LIGHTWEIGHT_TAG_BEFORE_ANNOTATED_TAG)
+				.create();
+		
+		String snapshotTag = "0.0.1-SNAPSHOT";
+		String latestTag = "OName-0.0.1";
+		
+		try (final Git git = git(); final Repository repo = git.getRepository()) {
+			try (Git wrap = Git.wrap(repo)) {
+				wrap.reset().setMode(ResetCommand.ResetType.HARD).call();
+				
+				// when
+				wrap.tag().setName(snapshotTag).call();
+				Thread.sleep(2000);
+				wrap.tag().setName(latestTag).call();
+				
+				DescribeResult res = DescribeCommand
+						.on(evaluateOnCommit, repo, new StdOutLoggerBridge(true))
+						.tags()
+						.call();
+				
+				// then
+				assertThat(res.toString()).isEqualTo(latestTag);
+			}
+		}
+	}
+	
+	@Test
+	public void shouldUseTheNewestTagOnACommitIfItHasMoreThanOneTagsReversedCase() throws Exception {
+		// given
+		mavenSandbox
+				.withParentProject(PROJECT_NAME, "jar")
+				.withNoChildProject()
+				.withGitRepoInParent(AvailableGitTestRepo.WITH_LIGHTWEIGHT_TAG_BEFORE_ANNOTATED_TAG)
+				.create();
+		
+		String beforeTag = "OName-0.0.1";
+		String latestTag = "0.0.1-SNAPSHOT";
+		
+		try (final Git git = git(); final Repository repo = git.getRepository()) {
+			try (Git wrap = Git.wrap(repo)) {
+				wrap.reset().setMode(ResetCommand.ResetType.HARD).call();
+				
+				// when
+				wrap.tag().setName(beforeTag).call();
+				wrap.tag().setName(latestTag).call();
+			}
+			
+			DescribeResult res = DescribeCommand
+					.on(evaluateOnCommit, repo, new StdOutLoggerBridge(true))
+					.tags()
+					.call();
+			
+			// then
+			assertThat(res.toString()).isEqualTo(latestTag);
+		}
+	}
 }
