@@ -43,6 +43,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.eclipse.jgit.storage.file.WindowCacheConfig;
+import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
+import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
 import javax.annotation.Nonnull;
 
@@ -95,18 +99,27 @@ public class JGitProvider extends GitDataProvider {
 				throw new GitCommitIdExecutionException("Could not get " + evaluateOnCommit + " Ref, are you sure you have set the dotGitDirectory property of this plugin to a valid path?");
 			}
 			revWalk = new RevWalk(git);
-			ObjectId headObjectId;
-			if (evaluateOnCommitReference != null) {
-				headObjectId = evaluateOnCommitReference.getObjectId();
+			if (!subDirectoryPath.isEmpty() 
+					&& new File(dotGitDirectory.getParent() + File.separator + subDirectoryPath).exists()) {
+				List<PathFilter> pathFilters = new ArrayList<>();
+				pathFilters.add(PathFilter.create(subDirectoryPath));
+				revWalk.setTreeFilter(AndTreeFilter.create(
+						PathFilterGroup.create(pathFilters), TreeFilter.ANY_DIFF));
+				evalCommit = revWalk.next();
 			} else {
-				headObjectId = evaluateOnCommitResolvedObjectId;
+				ObjectId headObjectId;
+				if (evaluateOnCommitReference != null) {
+					headObjectId = evaluateOnCommitReference.getObjectId();
+				} else {
+					headObjectId = evaluateOnCommitResolvedObjectId;
+				}
+				
+				if (headObjectId == null) {
+					throw new GitCommitIdExecutionException("Could not get " + evaluateOnCommit + " Ref, are you sure you have some commits in the dotGitDirectory?");
+				}
+				evalCommit = revWalk.parseCommit(headObjectId);
+				revWalk.markStart(evalCommit);
 			}
-			
-			if (headObjectId == null) {
-				throw new GitCommitIdExecutionException("Could not get " + evaluateOnCommit + " Ref, are you sure you have some commits in the dotGitDirectory?");
-			}
-			evalCommit = revWalk.parseCommit(headObjectId);
-			revWalk.markStart(evalCommit);
 		} catch (Exception e) {
 			throw new GitCommitIdExecutionException("Error", e);
 		}

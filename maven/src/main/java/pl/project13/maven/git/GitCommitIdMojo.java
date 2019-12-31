@@ -128,6 +128,12 @@ public class GitCommitIdMojo extends AbstractMojo {
 	File dotGitDirectory;
 	
 	/**
+	 * The sub directory path of the repository we want to check.
+	 */
+	@Parameter(defaultValue = "")
+	String subDirectoryPath;
+	
+	/**
 	 * Configuration for the {@code 'git-describe'} command.
 	 * You can modify the dirty marker, abbrev length and other options here.
 	 */
@@ -638,6 +644,7 @@ public class GitCommitIdMojo extends AbstractMojo {
 	private void loadGitDataWithJGit(@Nonnull Properties properties) throws GitCommitIdExecutionException {
 		GitDataProvider jGitProvider = JGitProvider
 				.on(dotGitDirectory, log)
+				.setSubDirectoryPath(subDirectoryPath)
 				.setPrefixDot(prefixDot)
 				.setAbbrevLength(abbrevLength)
 				.setDateFormat(dateFormat)

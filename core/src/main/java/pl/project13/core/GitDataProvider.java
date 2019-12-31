@@ -17,7 +17,6 @@
 
 package pl.project13.core;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import pl.project13.core.git.GitDescribeConfig;
 import pl.project13.core.cibuild.BuildServerDataProvider;
@@ -64,6 +63,8 @@ public abstract class GitDataProvider implements GitProvider {
 	protected List<String> includeOnlyProperties;
 	
 	protected boolean offline;
+	
+	protected String subDirectoryPath;
 	
 	public GitDataProvider(@Nonnull LoggerBridge log) {
 		this.log = log;
@@ -116,6 +117,11 @@ public abstract class GitDataProvider implements GitProvider {
 	
 	public GitDataProvider setOffline(boolean offline) {
 		this.offline = offline;
+		return this;
+	}
+	
+	public GitDataProvider setSubDirectoryPath(String subDirectoryPath) {
+		this.subDirectoryPath = subDirectoryPath;
 		return this;
 	}
 	
