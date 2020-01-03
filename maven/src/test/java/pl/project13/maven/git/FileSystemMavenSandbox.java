@@ -28,6 +28,8 @@ import javax.annotation.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Quick and dirty maven projects tree structure to create on disk during integration tests.
@@ -41,6 +43,7 @@ public class FileSystemMavenSandbox {
 	private String rootSandboxPath;
 	private MavenProject parentProject;
 	private boolean keepSandboxWhenFinishedTest = false;
+	private List<String> subDirs = new ArrayList<>();
 	
 	/**
 	 * Sample git repository location to use as source in integration tests
@@ -104,6 +107,14 @@ public class FileSystemMavenSandbox {
 	}
 	
 	@Nonnull
+	public FileSystemMavenSandbox withSubDirs(String ...dirs) {
+		for (String dir : dirs) {
+			subDirs.add(dir);
+		}
+		return this;
+	}
+	
+	@Nonnull
 	public FileSystemMavenSandbox create() throws RuntimeException {
 		try {
 			createParentDir();
@@ -136,6 +147,13 @@ public class FileSystemMavenSandbox {
 	private void createChildDirIfRequired() throws IOException {
 		if (childProject != null) {
 			FileUtils.forceMkdir(childProject.getBasedir());
+		}
+		if (!subDirs.isEmpty()) {
+			for (String dir : subDirs) {
+				if (dir != null && !dir.isEmpty()) {
+					FileUtils.forceMkdir(new File(parentProject.getBasedir() + File.separator + dir));
+				}
+			}
 		}
 	}
 	

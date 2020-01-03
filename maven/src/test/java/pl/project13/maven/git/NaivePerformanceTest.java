@@ -53,7 +53,7 @@ public class NaivePerformanceTest extends GitIntegrationTest {
 	
 	@Test
 	@Parameters(method = "performanceParameter")
-	@Ignore("Naive performance test - run this locally")
+//	@Ignore("Naive performance test - run this locally")
 	public void performance(boolean useNativeGit, int iterations) throws Exception {
 		// given
 		mavenSandbox.withParentProject("my-pom-project", "pom")

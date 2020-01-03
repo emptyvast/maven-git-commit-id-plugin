@@ -130,7 +130,7 @@ public class GitCommitIdMojo extends AbstractMojo {
 	/**
 	 * The sub directory path of the repository we want to check.
 	 */
-	@Parameter(defaultValue = "")
+	@Parameter
 	String subDirectoryPath;
 	
 	/**
@@ -621,6 +621,10 @@ public class GitCommitIdMojo extends AbstractMojo {
 	private void loadGitDataWithNativeGit(@Nonnull Properties properties) throws GitCommitIdExecutionException {
 		try {
 			final File basedir = project.getBasedir().getCanonicalFile();
+			
+			if (subDirectoryPath != null) {
+				log.warn("subDirectoryPath value is ignored when native git is used.", subDirectoryPath);
+			}
 			
 			GitDataProvider nativeGitProvider = NativeGitProvider
 					.on(basedir, nativeGitTimeoutInMs, log)

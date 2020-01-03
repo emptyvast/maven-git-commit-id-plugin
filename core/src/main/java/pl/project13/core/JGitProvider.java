@@ -53,7 +53,7 @@ import javax.annotation.Nonnull;
 public class JGitProvider extends GitDataProvider {
 	
 	private File dotGitDirectory;
-	private Repository git;
+	private Repository gitRepo;
 	private ObjectReader objectReader;
 	private RevWalk revWalk;
 	private RevCommit evalCommit;
@@ -72,41 +72,54 @@ public class JGitProvider extends GitDataProvider {
 	
 	@Override
 	public void init() throws GitCommitIdExecutionException {
-		git = getGitRepository();
-		objectReader = git.newObjectReader();
+		gitRepo = getGitRepository();
+		objectReader = gitRepo.newObjectReader();
 	}
 	
 	@Override
 	public String getBuildAuthorName() throws GitCommitIdExecutionException {
-		String userName = git.getConfig().getString("user", null, "name");
+		String userName = gitRepo.getConfig().getString("user", null, "name");
 		return Optional.ofNullable(userName).orElse("");
 	}
 	
 	@Override
 	public String getBuildAuthorEmail() throws GitCommitIdExecutionException {
-		String userEmail = git.getConfig().getString("user", null, "email");
+		String userEmail = gitRepo.getConfig().getString("user", null, "email");
 		return Optional.ofNullable(userEmail).orElse("");
 	}
 	
 	@Override
 	public void prepareGitToExtractMoreDetailedRepoInformation() throws GitCommitIdExecutionException {
 		try {
-			// more details parsed out bellow
-			Ref evaluateOnCommitReference = git.findRef(evaluateOnCommit);
-			ObjectId evaluateOnCommitResolvedObjectId = git.resolve(evaluateOnCommit);
-			
-			if ((evaluateOnCommitReference == null) && (evaluateOnCommitResolvedObjectId == null)) {
-				throw new GitCommitIdExecutionException("Could not get " + evaluateOnCommit + " Ref, are you sure you have set the dotGitDirectory property of this plugin to a valid path?");
-			}
-			revWalk = new RevWalk(git);
-			if (!subDirectoryPath.isEmpty() 
+			revWalk = new RevWalk(gitRepo);
+
+			// if we need to get commit info from a specific sub directory
+			if (subDirectoryPath != null 
 					&& new File(dotGitDirectory.getParent() + File.separator + subDirectoryPath).exists()) {
+				ObjectId headId = gitRepo.resolve(evaluateOnCommit);
+				if ((headId == null)) {
+					throw new GitCommitIdExecutionException("Could not get " + evaluateOnCommit
+							+ " commit, are you sure you have set the dotGitDirectory property of this plugin to a valid path?");
+				}
+				revWalk.markStart(revWalk.lookupCommit(headId));
 				List<PathFilter> pathFilters = new ArrayList<>();
 				pathFilters.add(PathFilter.create(subDirectoryPath));
 				revWalk.setTreeFilter(AndTreeFilter.create(
 						PathFilterGroup.create(pathFilters), TreeFilter.ANY_DIFF));
+				
 				evalCommit = revWalk.next();
 			} else {
+				if (subDirectoryPath != null
+						&& !new File(dotGitDirectory.getParent() + File.separator + subDirectoryPath).exists()) {
+					log.warn("subDirectoryPath doesn't exist: {}, fall back to project's base directory.", subDirectoryPath);
+				}
+				// more details parsed out bellow
+				Ref evaluateOnCommitReference = gitRepo.findRef(evaluateOnCommit);
+				ObjectId evaluateOnCommitResolvedObjectId = gitRepo.resolve(evaluateOnCommit);
+				
+				if ((evaluateOnCommitReference == null) && (evaluateOnCommitResolvedObjectId == null)) {
+					throw new GitCommitIdExecutionException("Could not get " + evaluateOnCommit + " Ref, are you sure you have set the dotGitDirectory property of this plugin to a valid path?");
+				}
 				ObjectId headObjectId;
 				if (evaluateOnCommitReference != null) {
 					headObjectId = evaluateOnCommitReference.getObjectId();
@@ -139,14 +152,14 @@ public class JGitProvider extends GitDataProvider {
 	}
 	
 	private String getBranchForHead() throws IOException {
-		return git.getBranch();
+		return gitRepo.getBranch();
 	}
 	
 	private String getBranchForCommitish() throws GitCommitIdExecutionException {
 		try {
 			String commitId = getCommitId();
 			
-			boolean evaluateOnCommitPointsToTag = git.getRefDatabase().getRefsByPrefix(Constants.R_TAGS)
+			boolean evaluateOnCommitPointsToTag = gitRepo.getRefDatabase().getRefsByPrefix(Constants.R_TAGS)
 					.stream()
 					.anyMatch(ref -> Repository.shortenRefName(ref.getName()).equalsIgnoreCase(evaluateOnCommit));
 			
@@ -156,7 +169,7 @@ public class JGitProvider extends GitDataProvider {
 				return commitId;
 			}
 			
-			List<String> branchesForCommit = git.getRefDatabase().getRefsByPrefix(Constants.R_HEADS)
+			List<String> branchesForCommit = gitRepo.getRefDatabase().getRefsByPrefix(Constants.R_HEADS)
 					.stream()
 					.filter(ref -> commitId.equals(ref.getObjectId().name()))
 					.map(ref -> Repository.shortenRefName(ref.getName()))
@@ -183,7 +196,7 @@ public class JGitProvider extends GitDataProvider {
 	
 	@Override
 	public String getGitDescribe() throws GitCommitIdExecutionException {
-		return getGitDescribe(git);
+		return getGitDescribe(gitRepo);
 	}
 	
 	@Override
@@ -199,7 +212,7 @@ public class JGitProvider extends GitDataProvider {
 	@Override
 	public boolean isDirty() throws GitCommitIdExecutionException {
 		try {
-			return JGitCommon.isRepositoryInDirtyState(git);
+			return JGitCommon.isRepositoryInDirtyState(gitRepo);
 		} catch (GitAPIException e) {
 			throw new GitCommitIdExecutionException("Failed to get git status: " + e.getMessage(), e);
 		}
@@ -235,7 +248,7 @@ public class JGitProvider extends GitDataProvider {
 	
 	@Override
 	public String getRemoteOriginUrl() throws GitCommitIdExecutionException {
-		String url = git.getConfig().getString("remote", "origin", "url");
+		String url = gitRepo.getConfig().getString("remote", "origin", "url");
 		return stripCredentialsFromOriginUrl(url);
 	}
 	
@@ -291,8 +304,8 @@ public class JGitProvider extends GitDataProvider {
 		}
 		// http://www.programcreek.com/java-api-examples/index.php?api=org.eclipse.jgit.storage.file.WindowCacheConfig
 		// Example 3
-		if (git != null) {
-			git.close();
+		if (gitRepo != null) {
+			gitRepo.close();
 			// git.close() is not enough with jGit on Windows
 			// remove the references from packFile by initializing cache used in the repository
 			// fixing lock issues on Windows when repository has pack files
@@ -354,7 +367,7 @@ public class JGitProvider extends GitDataProvider {
 			if (!offline) {
 				fetch();
 			}
-			Optional<BranchTrackingStatus> branchTrackingStatus = Optional.ofNullable(BranchTrackingStatus.of(git, getBranchName()));
+			Optional<BranchTrackingStatus> branchTrackingStatus = Optional.ofNullable(BranchTrackingStatus.of(gitRepo, getBranchName()));
 			return branchTrackingStatus.map(bts -> AheadBehind.of(bts.getAheadCount(), bts.getBehindCount()))
 					.orElse(AheadBehind.NO_REMOTE);
 		} catch (Exception e) {
@@ -363,7 +376,7 @@ public class JGitProvider extends GitDataProvider {
 	}
 	
 	private void fetch() {
-		FetchCommand fetchCommand = Git.wrap(git).fetch();
+		FetchCommand fetchCommand = Git.wrap(gitRepo).fetch();
 		try {
 			fetchCommand.setThin(true).call();
 		} catch (Exception e) {
@@ -375,6 +388,6 @@ public class JGitProvider extends GitDataProvider {
 	
 	@VisibleForTesting
 	public void setRepository(Repository git) {
-		this.git = git;
+		this.gitRepo = git;
 	}
 }
