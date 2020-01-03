@@ -133,6 +133,12 @@ public class GitCommitIdMojo extends AbstractMojo {
 	private File dotGitDirectory;
 	
 	/**
+	 * The sub directory path of the repository we want to check.
+	 */
+	@Parameter
+	String subDirectoryPath;
+	
+	/**
 	 * Configuration for the {@code 'git-describe'} command.
 	 * You can modify the dirty marker, abbrev length and other options here.
 	 */
@@ -532,6 +538,10 @@ public class GitCommitIdMojo extends AbstractMojo {
 		try {
 			final File basedir = project.getBasedir().getCanonicalFile();
 			
+			if (subDirectoryPath != null) {
+				log.warn("subDirectoryPath value is ignored when native git is used.", subDirectoryPath);
+			}
+			
 			GitDataProvider nativeGitProvider = NativeGitProvider
 					.on(basedir, log)
 					.setPrefixDot(prefixDot)
@@ -550,6 +560,7 @@ public class GitCommitIdMojo extends AbstractMojo {
 	void loadGitDataWithJGit(@NotNull Properties properties) throws GitCommitIdExecutionException {
 		GitDataProvider jGitProvider = JGitProvider
 				.on(dotGitDirectory, log)
+				.setSubDirectoryPath(subDirectoryPath)
 				.setPrefixDot(prefixDot)
 				.setAbbrevLength(abbrevLength)
 				.setDateFormat(dateFormat)

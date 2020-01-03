@@ -32,6 +32,10 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.RevWalkUtils;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
+import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -44,15 +48,17 @@ import pl.project13.maven.git.log.LoggerBridge;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import org.eclipse.jgit.storage.file.WindowCacheConfig;
 
 public class JGitProvider extends GitDataProvider {
 	
 	private File dotGitDirectory;
-	private Repository git;
+	private Repository gitRepo;
 	private ObjectReader objectReader;
 	private RevWalk revWalk;
 	private RevCommit evalCommit;
@@ -71,45 +77,69 @@ public class JGitProvider extends GitDataProvider {
 	
 	@Override
 	public void init() throws GitCommitIdExecutionException {
-		git = getGitRepository();
-		objectReader = git.newObjectReader();
+		gitRepo = getGitRepository();
+		objectReader = gitRepo.newObjectReader();
 	}
 	
 	@Override
 	public String getBuildAuthorName() throws GitCommitIdExecutionException {
-		String userName = git.getConfig().getString("user", null, "name");
+		String userName = gitRepo.getConfig().getString("user", null, "name");
 		return MoreObjects.firstNonNull(userName, "");
 	}
 	
 	@Override
 	public String getBuildAuthorEmail() throws GitCommitIdExecutionException {
-		String userEmail = git.getConfig().getString("user", null, "email");
+		String userEmail = gitRepo.getConfig().getString("user", null, "email");
 		return MoreObjects.firstNonNull(userEmail, "");
 	}
 	
 	@Override
 	public void prepareGitToExtractMoreDetailedRepoInformation() throws GitCommitIdExecutionException {
 		try {
-			// more details parsed out bellow
-			Ref evaluateOnCommitReference = git.findRef(evaluateOnCommit);
-			ObjectId evaluateOnCommitResolvedObjectId = git.resolve(evaluateOnCommit);
+			revWalk = new RevWalk(gitRepo);
 			
-			if ((evaluateOnCommitReference == null) && (evaluateOnCommitResolvedObjectId == null)) {
-				throw new GitCommitIdExecutionException("Could not get " + evaluateOnCommit + " Ref, are you sure you have set the dotGitDirectory property of this plugin to a valid path?");
-			}
-			revWalk = new RevWalk(git);
-			ObjectId headObjectId = null;
-			if (evaluateOnCommitReference != null) {
-				headObjectId = evaluateOnCommitReference.getObjectId();
+			// if we need to get commit info from a specific sub directory
+			if (subDirectoryPath != null
+					&& new File(dotGitDirectory.getParent() + File.separator + subDirectoryPath).exists()) {
+				ObjectId headId = gitRepo.resolve(evaluateOnCommit);
+				if ((headId == null)) {
+					throw new GitCommitIdExecutionException("Could not get " + evaluateOnCommit
+							+ " commit, are you sure you have set the dotGitDirectory property of this plugin to a valid path?");
+				}
+				revWalk.markStart(revWalk.lookupCommit(headId));
+				List<PathFilter> pathFilters = new ArrayList<>();
+				pathFilters.add(PathFilter.create(subDirectoryPath));
+				revWalk.setTreeFilter(AndTreeFilter.create(
+						PathFilterGroup.create(pathFilters), TreeFilter.ANY_DIFF));
+				
+				evalCommit = revWalk.next();
 			} else {
-				headObjectId = evaluateOnCommitResolvedObjectId;
+				if (subDirectoryPath != null
+						&& !new File(dotGitDirectory.getParent() + File.separator + subDirectoryPath).exists()) {
+					log.warn("subDirectoryPath doesn't exist: {}, fall back to project's base directory.", subDirectoryPath);
+				}
+				
+				// more details parsed out bellow
+				Ref evaluateOnCommitReference = gitRepo.findRef(evaluateOnCommit);
+				ObjectId evaluateOnCommitResolvedObjectId = gitRepo.resolve(evaluateOnCommit);
+				
+				if ((evaluateOnCommitReference == null) && (evaluateOnCommitResolvedObjectId == null)) {
+					throw new GitCommitIdExecutionException("Could not get " + evaluateOnCommit + " Ref, are you sure you have set the dotGitDirectory property of this plugin to a valid path?");
+				}
+				
+				ObjectId headObjectId = null;
+				if (evaluateOnCommitReference != null) {
+					headObjectId = evaluateOnCommitReference.getObjectId();
+				} else {
+					headObjectId = evaluateOnCommitResolvedObjectId;
+				}
+				
+				if (headObjectId == null) {
+					throw new GitCommitIdExecutionException("Could not get " + evaluateOnCommit + " Ref, are you sure you have some commits in the dotGitDirectory?");
+				}
+				evalCommit = revWalk.parseCommit(headObjectId);
+				revWalk.markStart(evalCommit);
 			}
-			
-			if (headObjectId == null) {
-				throw new GitCommitIdExecutionException("Could not get " + evaluateOnCommit + " Ref, are you sure you have some commits in the dotGitDirectory?");
-			}
-			evalCommit = revWalk.parseCommit(headObjectId);
-			revWalk.markStart(evalCommit);
 		} catch (Exception e) {
 			throw new GitCommitIdExecutionException("Error", e);
 		}
@@ -118,7 +148,7 @@ public class JGitProvider extends GitDataProvider {
 	@Override
 	public String getBranchName() throws GitCommitIdExecutionException {
 		try {
-			return git.getBranch();
+			return gitRepo.getBranch();
 		} catch (IOException e) {
 			throw new GitCommitIdExecutionException(e);
 		}
@@ -126,7 +156,7 @@ public class JGitProvider extends GitDataProvider {
 	
 	@Override
 	public String getGitDescribe() throws GitCommitIdExecutionException {
-		return getGitDescribe(git);
+		return getGitDescribe(gitRepo);
 	}
 	
 	@Override
@@ -142,7 +172,7 @@ public class JGitProvider extends GitDataProvider {
 	@Override
 	public boolean isDirty() throws GitCommitIdExecutionException {
 		try {
-			return JGitCommon.isRepositoryInDirtyState(git);
+			return JGitCommon.isRepositoryInDirtyState(gitRepo);
 		} catch (GitAPIException e) {
 			throw new GitCommitIdExecutionException("Failed to get git status: " + e.getMessage(), e);
 		}
@@ -178,7 +208,7 @@ public class JGitProvider extends GitDataProvider {
 	
 	@Override
 	public String getRemoteOriginUrl() throws GitCommitIdExecutionException {
-		String url = git.getConfig().getString("remote", "origin", "url");
+		String url = gitRepo.getConfig().getString("remote", "origin", "url");
 		return stripCredentialsFromOriginUrl(url);
 	}
 	
@@ -234,8 +264,8 @@ public class JGitProvider extends GitDataProvider {
 		}
 		// http://www.programcreek.com/java-api-examples/index.php?api=org.eclipse.jgit.storage.file.WindowCacheConfig
 		// Example 3
-		if (git != null) {
-			git.close();
+		if (gitRepo != null) {
+			gitRepo.close();
 			// git.close() is not enough with jGit on Windows
 			// remove the references from packFile by initializing cache used in the repository
 			// fixing lock issues on Windows when repository has pack files
@@ -295,6 +325,6 @@ public class JGitProvider extends GitDataProvider {
 	
 	@VisibleForTesting
 	public void setRepository(Repository git) {
-		this.git = git;
+		this.gitRepo = git;
 	}
 }

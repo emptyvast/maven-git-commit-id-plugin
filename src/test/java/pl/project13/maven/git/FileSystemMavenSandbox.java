@@ -24,6 +24,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 import com.google.common.io.Files;
@@ -40,6 +42,7 @@ public class FileSystemMavenSandbox {
 	private String rootSandboxPath;
 	private MavenProject parentProject;
 	private boolean keepSandboxWhenFinishedTest = false;
+	private List<String> subDirs = new ArrayList<>();
 	
 	/**
 	 * Sample git repository location to use as source in integration tests
@@ -103,6 +106,14 @@ public class FileSystemMavenSandbox {
 	}
 	
 	@NotNull
+	public FileSystemMavenSandbox withSubDirs(String ...dirs) {
+		for (String dir : dirs) {
+			subDirs.add(dir);
+		}
+		return this;
+	}
+	
+	@NotNull
 	public FileSystemMavenSandbox create() throws RuntimeException {
 		try {
 			createParentDir();
@@ -135,6 +146,13 @@ public class FileSystemMavenSandbox {
 	private void createChildDirIfRequired() throws IOException {
 		if (childProject != null) {
 			FileUtils.forceMkdir(childProject.getBasedir());
+		}
+		if (!subDirs.isEmpty()) {
+			for (String dir : subDirs) {
+				if (dir != null && !dir.isEmpty()) {
+					FileUtils.forceMkdir(new File(parentProject.getBasedir() + File.separator + dir));
+				}
+			}
 		}
 	}
 	

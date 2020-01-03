@@ -98,6 +98,17 @@ public class NativeAndJGitProviderTest extends GitIntegrationTest {
 		}
 	}
 	
+	@Test
+	public void testTwoCommitsInDifferentFolder() throws Exception {
+		mavenSandbox.withParentProject("my-basic-project", "jar").withNoChildProject()
+				.withGitRepoInParent(AvailableGitTestRepo.WITH_TWO_COMMITS_IN_DIFFERENT_FOLDERS)
+				.withSubDirs("folder1", "folder2", "folder3").create();
+		MavenProject targetProject = mavenSandbox.getParentProject();
+		mojo.subDirectoryPath = "folder1";
+		verifyNativeAndJGit(AvailableGitTestRepo.WITH_TWO_COMMITS_IN_DIFFERENT_FOLDERS, targetProject, DEFAULT_FORMAT_STRING);
+		mojo.subDirectoryPath = null;
+	}
+	
 	private void verifyNativeAndJGit(AvailableGitTestRepo repo, MavenProject targetProject, String formatString) throws Exception {
 		setProjectToExecuteMojoIn(targetProject);
 		
@@ -117,26 +128,28 @@ public class NativeAndJGitProviderTest extends GitIntegrationTest {
 		assertGitPropertiesPresentInProject(jgitProps);
 		assertGitPropertiesPresentInProject(nativeProps);
 		
-		for (String key : GIT_KEYS) {
-			if (!key.equals("git.build.time")) { // git.build.time is excused because the two runs happened at different times.
-				String jGitKey = jgitProps.getProperty(key);
-				String nativeKey = nativeProps.getProperty(key);
-				assertEquals("Key difference for key: '" + key + "'; jgit=" + jGitKey + "; nativeKey=" + nativeKey + "; for " + repo.getDir(), jGitKey, nativeKey);
-			} else {
-				// Ensure that the date formats are parseable and within reason. If running all the git commands on the
-				// native provider takes more than 60 seconds, then something is seriously wrong.
-				long jGitBuildTimeInMs = format.parse(jgitProps.getProperty(key)).getTime();
-				long nativeBuildTimeInMs = format.parse(nativeProps.getProperty(key)).getTime();
-				Assert.assertTrue("Time ran backwards, jgitTime after nativeTime!", jGitBuildTimeInMs <= nativeBuildTimeInMs);
-				Assert.assertTrue("Build ran too slow.", (nativeBuildTimeInMs - jGitBuildTimeInMs) < 60000L); // If native takes more than 1 minute, something is wrong.
+		if (repo != AvailableGitTestRepo.WITH_TWO_COMMITS_IN_DIFFERENT_FOLDERS) {
+			for (String key : GIT_KEYS) {
+				if (!key.equals("git.build.time")) { // git.build.time is excused because the two runs happened at different times.
+					String jGitKey = jgitProps.getProperty(key);
+					String nativeKey = nativeProps.getProperty(key);
+					assertEquals("Key difference for key: '" + key + "'; jgit=" + jGitKey + "; nativeKey=" + nativeKey + "; for " + repo.getDir(), jGitKey, nativeKey);
+				} else {
+					// Ensure that the date formats are parseable and within reason. If running all the git commands on the
+					// native provider takes more than 60 seconds, then something is seriously wrong.
+					long jGitBuildTimeInMs = format.parse(jgitProps.getProperty(key)).getTime();
+					long nativeBuildTimeInMs = format.parse(nativeProps.getProperty(key)).getTime();
+					Assert.assertTrue("Time ran backwards, jgitTime after nativeTime!", jGitBuildTimeInMs <= nativeBuildTimeInMs);
+					Assert.assertTrue("Build ran too slow.", (nativeBuildTimeInMs - jGitBuildTimeInMs) < 60000L); // If native takes more than 1 minute, something is wrong.
+				}
 			}
+			
+			// Check the commit time to be equal in ms, too.
+			long jGitCommitTimeInMs = format.parse(jgitProps.getProperty("git.commit.time")).getTime();
+			long nativeCommitTimeInMs = format.parse(nativeProps.getProperty("git.commit.time")).getTime();
+			
+			assertEquals("commit times parse to different time stamps", jGitCommitTimeInMs, nativeCommitTimeInMs);
 		}
-		
-		// Check the commit time to be equal in ms, too.
-		long jGitCommitTimeInMs = format.parse(jgitProps.getProperty("git.commit.time")).getTime();
-		long nativeCommitTimeInMs = format.parse(nativeProps.getProperty("git.commit.time")).getTime();
-		
-		assertEquals("commit times parse to different time stamps", jGitCommitTimeInMs, nativeCommitTimeInMs);
 	}
 	
 	private Properties createCopy(Properties orig) {

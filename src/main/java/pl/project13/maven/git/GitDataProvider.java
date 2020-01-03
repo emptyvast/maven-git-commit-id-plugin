@@ -56,6 +56,8 @@ public abstract class GitDataProvider implements GitProvider {
 	
 	protected String evaluateOnCommit;
 	
+	protected String subDirectoryPath;
+	
 	public GitDataProvider(@NotNull LoggerBridge log) {
 		this.log = log;
 	}
@@ -87,6 +89,11 @@ public abstract class GitDataProvider implements GitProvider {
 	
 	public GitDataProvider setDateFormatTimeZone(String dateFormatTimeZone) {
 		this.dateFormatTimeZone = dateFormatTimeZone;
+		return this;
+	}
+	
+	public GitDataProvider setSubDirectoryPath(String subDirectoryPath) {
+		this.subDirectoryPath = subDirectoryPath;
 		return this;
 	}
 	
