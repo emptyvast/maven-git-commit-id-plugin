@@ -23,31 +23,31 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
 public class DatedRevTag {
-
-  public final AnyObjectId id;
-  public final String tagName;
-  public final DateTime date;
-
-  public DatedRevTag(RevTag tag) {
-    this(tag.getId(), tag.getTagName(), (tag.getTaggerIdent() != null) ? new DateTime(tag.getTaggerIdent().getWhen()) : DateTime.now().minusYears(1900));
-  }
-
-  public DatedRevTag(AnyObjectId id, String tagName) {
-    this(id, tagName, DateTime.now().minusYears(2000));
-  }
-
-  public DatedRevTag(AnyObjectId id, String tagName, DateTime date) {
-    this.id = id;
-    this.tagName = tagName;
-    this.date = date;
-  }
-
-  @Override
-  public String toString() {
-    return "DatedRevTag{" +
-        "id=" + id.name() +
-        ", tagName='" + tagName + '\'' +
-        ", date=" + DateTimeFormat.longDateTime().print(date) +
-        '}';
-  }
+	
+	public final AnyObjectId id;
+	public final String tagName;
+	public final DateTime date;
+	
+	public DatedRevTag(RevTag tag) {
+		this(tag.getId(), tag.getTagName(), (tag.getTaggerIdent() != null) ? new DateTime(tag.getTaggerIdent().getWhen()) : DateTime.now().minusYears(1900));
+	}
+	
+	public DatedRevTag(AnyObjectId id, String tagName) {
+		this(id, tagName, DateTime.now().minusYears(2000));
+	}
+	
+	public DatedRevTag(AnyObjectId id, String tagName, DateTime date) {
+		this.id = id;
+		this.tagName = tagName;
+		this.date = date;
+	}
+	
+	@Override
+	public String toString() {
+		return "DatedRevTag{" +
+				"id=" + id.name() +
+				", tagName='" + tagName + '\'' +
+				", date=" + DateTimeFormat.longDateTime().print(date) +
+				'}';
+	}
 }

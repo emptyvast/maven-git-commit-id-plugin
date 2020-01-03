@@ -21,27 +21,28 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.Properties;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class PropertyManager {  
-  public static void putWithoutPrefix(@NotNull Properties properties, String key, String value) {
-    if (!isNotEmpty(value)) {
-      value = "Unknown";
-    }
-    properties.put(key, value);
-  }
-
-  private static boolean isNotEmpty(@Nullable String value) {
-    return null != value && !" ".equals(value.trim().replaceAll(" ", ""));
-  }
-
-  public static Properties readProperties(@NotNull File propertiesFile, @NotNull String sourceCharset) throws Exception {
-    try (FileInputStream fis = new FileInputStream(propertiesFile);
-         InputStreamReader reader = new InputStreamReader(fis, sourceCharset)) {
-      final Properties retVal = new Properties();
-      retVal.load(reader);
-      return retVal;
-    }
-  }
+public class PropertyManager {
+	public static void putWithoutPrefix(@NotNull Properties properties, String key, String value) {
+		if (!isNotEmpty(value)) {
+			value = "Unknown";
+		}
+		properties.put(key, value);
+	}
+	
+	private static boolean isNotEmpty(@Nullable String value) {
+		return null != value && !" ".equals(value.trim().replaceAll(" ", ""));
+	}
+	
+	public static Properties readProperties(@NotNull File propertiesFile, @NotNull String sourceCharset) throws Exception {
+		try (FileInputStream fis = new FileInputStream(propertiesFile);
+		     InputStreamReader reader = new InputStreamReader(fis, sourceCharset)) {
+			final Properties retVal = new Properties();
+			retVal.load(reader);
+			return retVal;
+		}
+	}
 }

@@ -31,64 +31,64 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class GitCommitIdMojoTest {
-
-  @Test
-  public void loadShortDescribe() {
-    assertShortDescribe("1.0.2-12-g19471", "1.0.2-12");
-    assertShortDescribe("v1.0.0-0-gde4db35917", "v1.0.0-0");
-    assertShortDescribe("1.0.2-12-g19471-DEV", "1.0.2-12-DEV");
-    assertShortDescribe("V-1.0.2-12-g19471-DEV", "V-1.0.2-12-DEV");
-
-    assertShortDescribe(null, null);
-    assertShortDescribe("12.4.0-1432", "12.4.0-1432");
-    assertShortDescribe("12.6.0", "12.6.0");
-    assertShortDescribe("", "");
-  }
-
-  private void assertShortDescribe(String commitDescribe, String expectedShortDescribe) {
-    GitCommitIdMojo commitIdMojo = new GitCommitIdMojo();
-    Properties prop = new Properties();
-    if (commitDescribe != null) {
-      prop.put(GitCommitPropertyConstant.COMMIT_DESCRIBE, commitDescribe);
-    }
-    commitIdMojo.loadShortDescribe(prop);
-    assertThat(prop.getProperty(GitCommitPropertyConstant.COMMIT_SHORT_DESCRIBE)).isEqualTo(expectedShortDescribe);
-  }
-
-  @Test
-  public void testCraftPropertiesOutputFileWithRelativePath() throws IOException {
-    GitCommitIdMojo commitIdMojo = new GitCommitIdMojo();
-    File baseDir = new File(".");
-    String targetDir = baseDir.getCanonicalPath() + File.separator;
-    String generateGitPropertiesFilename = "target" + File.separator + "classes" + File.separator + "git.properties";
-    
-    File result = commitIdMojo.craftPropertiesOutputFile(baseDir, generateGitPropertiesFilename);
-    assertThat(result.getCanonicalPath()).isEqualTo(targetDir + generateGitPropertiesFilename);
-  }
-
-  @Test
-  public void testCraftPropertiesOutputFileWithFullPath() throws IOException {
-    GitCommitIdMojo commitIdMojo = new GitCommitIdMojo();
-    File baseDir = new File(".");
-    String targetDir = baseDir.getCanonicalPath() + File.separator;
-    String generateGitPropertiesFilename = targetDir + "target" + File.separator + "classes" + File.separator + "git.properties";
-
-    File result = commitIdMojo.craftPropertiesOutputFile(baseDir, generateGitPropertiesFilename);
-    assertThat(result.getCanonicalPath()).isEqualTo(generateGitPropertiesFilename);
-  }
-
-  @Test
-  public void verifyAllowedCharactersForEvaluateOnCommit() throws MojoExecutionException {
-    Pattern p = GitCommitIdMojo.allowedCharactersForEvaluateOnCommit;
-    assertTrue(p.matcher("5957e419d").matches());
-    assertTrue(p.matcher("my_tag").matches());
-    assertTrue(p.matcher("my-tag").matches());
-    assertTrue(p.matcher("my.tag").matches());
-    assertTrue(p.matcher("HEAD^1").matches());
-    assertTrue(p.matcher("feature/branch").matches());
-
-    assertFalse(p.matcher("; CODE INJECTION").matches());
-    assertFalse(p.matcher("|exit").matches());
-    assertFalse(p.matcher("&&cat /etc/passwd").matches());
-  }
+	
+	@Test
+	public void loadShortDescribe() {
+		assertShortDescribe("1.0.2-12-g19471", "1.0.2-12");
+		assertShortDescribe("v1.0.0-0-gde4db35917", "v1.0.0-0");
+		assertShortDescribe("1.0.2-12-g19471-DEV", "1.0.2-12-DEV");
+		assertShortDescribe("V-1.0.2-12-g19471-DEV", "V-1.0.2-12-DEV");
+		
+		assertShortDescribe(null, null);
+		assertShortDescribe("12.4.0-1432", "12.4.0-1432");
+		assertShortDescribe("12.6.0", "12.6.0");
+		assertShortDescribe("", "");
+	}
+	
+	private void assertShortDescribe(String commitDescribe, String expectedShortDescribe) {
+		GitCommitIdMojo commitIdMojo = new GitCommitIdMojo();
+		Properties prop = new Properties();
+		if (commitDescribe != null) {
+			prop.put(GitCommitPropertyConstant.COMMIT_DESCRIBE, commitDescribe);
+		}
+		commitIdMojo.loadShortDescribe(prop);
+		assertThat(prop.getProperty(GitCommitPropertyConstant.COMMIT_SHORT_DESCRIBE)).isEqualTo(expectedShortDescribe);
+	}
+	
+	@Test
+	public void testCraftPropertiesOutputFileWithRelativePath() throws IOException {
+		GitCommitIdMojo commitIdMojo = new GitCommitIdMojo();
+		File baseDir = new File(".");
+		String targetDir = baseDir.getCanonicalPath() + File.separator;
+		String generateGitPropertiesFilename = "target" + File.separator + "classes" + File.separator + "git.properties";
+		
+		File result = commitIdMojo.craftPropertiesOutputFile(baseDir, generateGitPropertiesFilename);
+		assertThat(result.getCanonicalPath()).isEqualTo(targetDir + generateGitPropertiesFilename);
+	}
+	
+	@Test
+	public void testCraftPropertiesOutputFileWithFullPath() throws IOException {
+		GitCommitIdMojo commitIdMojo = new GitCommitIdMojo();
+		File baseDir = new File(".");
+		String targetDir = baseDir.getCanonicalPath() + File.separator;
+		String generateGitPropertiesFilename = targetDir + "target" + File.separator + "classes" + File.separator + "git.properties";
+		
+		File result = commitIdMojo.craftPropertiesOutputFile(baseDir, generateGitPropertiesFilename);
+		assertThat(result.getCanonicalPath()).isEqualTo(generateGitPropertiesFilename);
+	}
+	
+	@Test
+	public void verifyAllowedCharactersForEvaluateOnCommit() throws MojoExecutionException {
+		Pattern p = GitCommitIdMojo.allowedCharactersForEvaluateOnCommit;
+		assertTrue(p.matcher("5957e419d").matches());
+		assertTrue(p.matcher("my_tag").matches());
+		assertTrue(p.matcher("my-tag").matches());
+		assertTrue(p.matcher("my.tag").matches());
+		assertTrue(p.matcher("HEAD^1").matches());
+		assertTrue(p.matcher("feature/branch").matches());
+		
+		assertFalse(p.matcher("; CODE INJECTION").matches());
+		assertFalse(p.matcher("|exit").matches());
+		assertFalse(p.matcher("&&cat /etc/passwd").matches());
+	}
 }

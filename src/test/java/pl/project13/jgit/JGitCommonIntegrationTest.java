@@ -18,22 +18,25 @@
 package pl.project13.jgit;
 
 import org.junit.Test;
+
+
 import pl.project13.maven.git.GitIntegrationTest;
 import pl.project13.maven.git.log.StdOutLoggerBridge;
+
 
 import static org.fest.assertions.Assertions.assertThat;
 
 public class JGitCommonIntegrationTest extends GitIntegrationTest {
-
-  @Test
-  public void trimFullTagName_shouldTrimFullTagNamePrefix() throws Exception {
-    // given
-    String fullName = "refs/tags/v1.0.0";
-
-    // when
-    String simpleName = new JGitCommon(new StdOutLoggerBridge(true)).trimFullTagName(fullName);
-
-    // then
-    assertThat(simpleName).isEqualTo("v1.0.0");
-  }
+	
+	@Test
+	public void trimFullTagName_shouldTrimFullTagNamePrefix() throws Exception {
+		// given
+		String fullName = "refs/tags/v1.0.0";
+		
+		// when
+		String simpleName = new JGitCommon(new StdOutLoggerBridge(true)).trimFullTagName(fullName);
+		
+		// then
+		assertThat(simpleName).isEqualTo("v1.0.0");
+	}
 }
