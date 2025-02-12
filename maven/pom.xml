@@ -29,7 +29,7 @@
 
     <java.target>1.8</java.target>
 
-    <maven-plugin-api.version>3.0</maven-plugin-api.version>
+    <maven-plugin-api.version>3.9.9</maven-plugin-api.version>
     <maven-plugin-plugin.version>3.6.0</maven-plugin-plugin.version>
 
     <junit.version>5.5.1</junit.version>
